@@ -1,0 +1,80 @@
+#Reproducible Research Project 1
+================================
+## Nick Rose
+## September 2015
+
+
+
+First we will setup and load the necessary libraries needed to conduct this 
+Analysis
+```{r, echo = TRUE}
+library(knitr)
+library(ggplot2)
+opts_chunk$set(echo= TRUE)
+```
+
+## Loading and preprocessing the data
+The next step is to load in the data, look at it to get a sense of what it
+looks like, and preprocess the data so that is useful
+```{r data load}
+activity <- read.csv("activity.csv")
+summary(activity)
+activity$date <- as.Date(activity$date)
+activity_sub <- na.exclude(activity)
+```
+In this case, we turned the interval into a factor and converted the dates into date class. We also created a subsetted database with the NA's removed.
+
+## What is mean total number of steps taken per day?
+To address this questions ignoring the NAs, we will use the subsetted data to
+ge the total number of steps per day. First we will make a new data set compsoed of days and total steps per day
+```{r}
+steps_per_day <- sapply(split(activity_sub$steps, activity_sub$date), sum)
+steps_per_day <- as.data.frame(steps_per_day)
+steps_per_day[,2] <- as.factor(rownames(steps_per_day))
+rownames(steps_per_day) <- NULL
+names(steps_per_day) <- c("Steps", "Day")
+summary(steps_per_day)
+```
+
+We can see from above that the total steps per day ranges from `r steps_per_day[1,1]` to `r steps_per_day[6,1]` with a median of `r steps_per_day[3,1]` and a mean of   
+`r steps_per_day[4,1]`.
+
+We can visualize this data by generating a histogram
+```{r}
+hist(steps_per_day$Steps, breaks = 20, xlab = "Steps per Day", col = "blue")
+```
+
+## What is the average daily activity pattern?
+To exmaine the data and compare the total of steps per interval through the day, we will first summarize the steps by interval for all days. 
+
+```{r}
+steps_per_interval <- sapply(split(activity_sub$steps, activity_sub$interval), sum)
+steps_per_interval <- as.data.frame(steps_per_interval)
+steps_per_interval[,2] <- unique(activity_sub$interval)
+rownames(steps_per_interval) <- NULL
+names(steps_per_interval) <- c("Steps", "Interval")
+```
+
+Then we can make a time series plot to visualize this data
+```{r}
+g <- ggplot(data = steps_per_interval, aes( x =Interval, y = Steps)) + geom_line()
+g
+```
+
+Then we can look at the data quantitatively 
+```{r}
+summary(steps_per_interval)
+steps_max <- steps_per_interval$Interval[steps_per_interval$Steps == 10927]
+```
+and determine that the time interval during the day that the most steps are taken is `r steps_max`
+
+
+## Imputing missing values
+However, we removed a large amount of NA values. We can also look at the data
+making asusmptions about the missing values. 
+
+
+
+
+
+## Are there differences in activity patterns between weekdays and weekends?
