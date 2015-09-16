@@ -48,7 +48,7 @@ hist(steps_per_day$Steps, breaks = 20, xlab = "Steps per Day", col = "blue")
 To exmaine the data and compare the total of steps per interval through the day, we will first summarize the steps by interval for all days. 
 
 ```{r}
-steps_per_interval <- sapply(split(activity_sub$steps, activity_sub$interval), sum)
+steps_per_interval <- sapply(split(activity_sub$steps, activity_sub$interval), mean)
 steps_per_interval <- as.data.frame(steps_per_interval)
 steps_per_interval[,2] <- unique(activity_sub$interval)
 rownames(steps_per_interval) <- NULL
@@ -64,17 +64,42 @@ g
 Then we can look at the data quantitatively 
 ```{r}
 summary(steps_per_interval)
-steps_max <- steps_per_interval$Interval[steps_per_interval$Steps == 10927]
+steps_max <- steps_per_interval$Interval[steps_per_interval$Steps == max(steps_per_interval$Steps)]
 ```
 and determine that the time interval during the day that the most steps are taken is `r steps_max`
 
 
 ## Imputing missing values
 However, we removed a large amount of NA values. We can also look at the data
-making asusmptions about the missing values. 
+making asusmptions about the missing values. We can calculate the number of NA values using the following R code: 
+```{r} 
+list_NA <- is.na(activity$steps)
+num_NAs <- length(list_NA[list_NA == TRUE])
+```
 
+The number of NAs in the dataset are `r num_NAs`
 
+To address these missing values, we will use the mean of the steps taken for 
+that interval across all days to replace the NA values. The code for this is 
+```{r}
+sub_NA <- activity[list_NA, ]
+for (i in 1:nrow(sub_NA)){
+    i_int <- sub_NA[i, 3]
+    sub_NA[i, 1] <- steps_per_interval$Steps[steps_per_interval$Interval == i_int]
+}
+activity_NAs <- rbind(activity_sub, sub_NA)
+```
+To exmaine how handling the NAs this way impacted our data, we will rerun our analysis of the total steps per day with the new data set.
 
+```{r}
+steps_per_day_NA <- sapply(split(activity_NAs$steps, activity_NAs$date), sum)
+steps_per_day_NA <- as.data.frame(steps_per_day_NA)
+steps_per_day_NA[,2] <- as.factor(rownames(steps_per_day_NA))
+rownames(steps_per_day_NA) <- NULL
+names(steps_per_day_NA) <- c("Steps", "Day")
+summary(steps_per_day_NA)
+hist(steps_per_day$Steps, breaks = 20, xlab = "Steps per Day", col = "blue")
+```
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
