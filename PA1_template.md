@@ -1,25 +1,50 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 First we will setup and load the necessary libraries needed to conduct this 
 Analysis
-```{r, echo = TRUE}
+
+```r
 library(knitr)
+```
+
+```
+## Warning: package 'knitr' was built under R version 3.2.2
+```
+
+```r
 library(ggplot2)
+```
+
+```
+## Warning: package 'ggplot2' was built under R version 3.2.2
+```
+
+```r
 opts_chunk$set(echo= TRUE)
 ```
 
 ## Loading and preprocessing the data
 The next step is to load in the data, look at it to get a sense of what it
 looks like, and preprocess the data so that is useful
-```{r data load}
+
+```r
 activity <- read.csv("activity.csv")
 summary(activity)
+```
+
+```
+##      steps                date          interval     
+##  Min.   :  0.00   2012-10-01:  288   Min.   :   0.0  
+##  1st Qu.:  0.00   2012-10-02:  288   1st Qu.: 588.8  
+##  Median :  0.00   2012-10-03:  288   Median :1177.5  
+##  Mean   : 37.38   2012-10-04:  288   Mean   :1177.5  
+##  3rd Qu.: 12.00   2012-10-05:  288   3rd Qu.:1766.2  
+##  Max.   :806.00   2012-10-06:  288   Max.   :2355.0  
+##  NA's   :2304     (Other)   :15840
+```
+
+```r
 activity$date <- as.Date(activity$date)
 activity_sub <- na.exclude(activity)
 ```
@@ -28,7 +53,8 @@ In this case, we turned the interval into a factor and converted the dates into 
 ## What is mean total number of steps taken per day?
 To address this questions ignoring the NAs, we will use the subsetted data to
 ge the total number of steps per day. First we will make a new data set compsoed of days and total steps per day
-```{r}
+
+```r
 steps_per_day <- sapply(split(activity_sub$steps, activity_sub$date), sum)
 steps_per_day <- as.data.frame(steps_per_day)
 steps_per_day[,2] <- as.factor(rownames(steps_per_day))
@@ -37,18 +63,33 @@ names(steps_per_day) <- c("Steps", "Day")
 summary(steps_per_day)
 ```
 
-We can see from above that the total steps per day ranges from `r steps_per_day[1,1]` to `r steps_per_day[6,1]` with a median of `r steps_per_day[3,1]` and a mean of   
-`r steps_per_day[4,1]`.
+```
+##      Steps               Day    
+##  Min.   :   41   2012-10-02: 1  
+##  1st Qu.: 8841   2012-10-03: 1  
+##  Median :10765   2012-10-04: 1  
+##  Mean   :10766   2012-10-05: 1  
+##  3rd Qu.:13294   2012-10-06: 1  
+##  Max.   :21194   2012-10-07: 1  
+##                  (Other)   :47
+```
+
+We can see from above that the total steps per day ranges from 126 to 11015 with a median of 12116 and a mean of   
+13294.
 
 We can visualize this data by generating a histogram
-```{r}
+
+```r
 hist(steps_per_day$Steps, breaks = 20, xlab = "Steps per Day", col = "blue")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
 
 ## What is the average daily activity pattern?
 To exmaine the data and compare the total of steps per interval through the day, we will first summarize the steps by interval for all days. 
 
-```{r}
+
+```r
 steps_per_interval <- sapply(split(activity_sub$steps, activity_sub$interval), mean)
 steps_per_interval <- as.data.frame(steps_per_interval)
 steps_per_interval[,2] <- unique(activity_sub$interval)
@@ -57,32 +98,51 @@ names(steps_per_interval) <- c("Steps", "Interval")
 ```
 
 Then we can make a time series plot to visualize this data
-```{r}
+
+```r
 g <- ggplot(data = steps_per_interval, aes( x =Interval, y = Steps)) + geom_line()
 g
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
+
 Then we can look at the data quantitatively 
-```{r}
+
+```r
 summary(steps_per_interval)
+```
+
+```
+##      Steps            Interval     
+##  Min.   :  0.000   Min.   :   0.0  
+##  1st Qu.:  2.486   1st Qu.: 588.8  
+##  Median : 34.113   Median :1177.5  
+##  Mean   : 37.383   Mean   :1177.5  
+##  3rd Qu.: 52.835   3rd Qu.:1766.2  
+##  Max.   :206.170   Max.   :2355.0
+```
+
+```r
 steps_max <- steps_per_interval$Interval[steps_per_interval$Steps == max(steps_per_interval$Steps)]
 ```
-and determine that the time interval during the day that the most steps are taken is `r steps_max`
+and determine that the time interval during the day that the most steps are taken is 835
 
 
 ## Imputing missing values
 However, we removed a large amount of NA values. We can also look at the data
 making asusmptions about the missing values. We can calculate the number of NA values using the following R code: 
-```{r} 
+
+```r
 list_NA <- is.na(activity$steps)
 num_NAs <- length(list_NA[list_NA == TRUE])
 ```
 
-The number of NAs in the dataset are `r num_NAs`
+The number of NAs in the dataset are 2304
 
 To address these missing values, we will use the mean of the steps taken for 
 that interval across all days to replace the NA values. The code for this is 
-```{r}
+
+```r
 sub_NA <- activity[list_NA, ]
 for (i in 1:nrow(sub_NA)){
     i_int <- sub_NA[i, 3]
@@ -92,20 +152,38 @@ activity_NAs <- rbind(activity_sub, sub_NA)
 ```
 To exmaine how handling the NAs this way impacted our data, we will rerun our analysis of the total steps per day with the new data set.
 
-```{r}
+
+```r
 steps_per_day_NA <- sapply(split(activity_NAs$steps, activity_NAs$date), sum)
 steps_per_day_NA <- as.data.frame(steps_per_day_NA)
 steps_per_day_NA[,2] <- as.factor(rownames(steps_per_day_NA))
 rownames(steps_per_day_NA) <- NULL
 names(steps_per_day_NA) <- c("Steps", "Day")
 summary(steps_per_day_NA)
+```
+
+```
+##      Steps               Day    
+##  Min.   :   41   2012-10-01: 1  
+##  1st Qu.: 9819   2012-10-02: 1  
+##  Median :10766   2012-10-03: 1  
+##  Mean   :10766   2012-10-04: 1  
+##  3rd Qu.:12811   2012-10-05: 1  
+##  Max.   :21194   2012-10-06: 1  
+##                  (Other)   :55
+```
+
+```r
 hist(steps_per_day_NA$Steps, breaks = 20, xlab = "Steps per Day", col = "blue")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-9-1.png) 
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
 next we will look at differences in activity betwene weekdays and weekends. First we need ot transform our steps_per interval dataset to include a column that lets us know whether it was a weekday or weekend
-```{r}
+
+```r
 activity_NAs$dow <- weekdays(activity_NAs$date)
 for(i in 1:nrow(activity_NAs)){
     if(activity_NAs[i, "dow"] == "Monday" | activity_NAs[i, "dow"] == "Tuesday" |
@@ -119,7 +197,8 @@ for(i in 1:nrow(activity_NAs)){
 activity_NAs$type <- as.factor(activity_NAs$type)
 ```
 Then well get the mean for each time interval for weekdays and weekends
-```{r}
+
+```r
 steps_per_interval_weekday <- with (activity_NAs[activity_NAs$type == "Weekday", ], sapply(split(steps, interval), mean))
 steps_per_interval_weekday <- as.data.frame(steps_per_interval_weekday)
 steps_per_interval_weekday[,2] <- unique(activity_sub$interval)
@@ -137,10 +216,17 @@ Combined_steps$Type <- as.factor(Combined_steps$Type)
 ```
 
 Now we can compare this data visually
-```{r}
-coplot(Steps~Interval | Type, Combined_steps)
 
+```r
+coplot(Steps~Interval | Type, Combined_steps)
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-12-1.png) 
+
+```r
 par(mfrow = c(2,1))
 with (steps_per_interval_weekday, plot(Interval, Steps, xlab = "Intervals", ylab = "Steps", main = "Weekdays", type = "l"))
 with (steps_per_interval_weekend, plot(Interval, Steps, xlab = "Intervals", ylab = "Steps", main = "Weekends", type = "l"))
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-12-2.png) 
