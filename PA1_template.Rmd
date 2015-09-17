@@ -11,6 +11,7 @@ Analysis
 ```{r, echo = TRUE}
 library(knitr)
 library(ggplot2)
+library(lattice)
 opts_chunk$set(echo= TRUE)
 ```
 
@@ -40,13 +41,13 @@ summary(steps_per_day)
 We can see from above that the total steps per day ranges from `r steps_per_day[1,1]` to `r steps_per_day[6,1]` with a median of `r steps_per_day[3,1]` and a mean of   
 `r steps_per_day[4,1]`.
 
-We can visualize this data by generating a histogram
+We can visualize this data by generating a histogram and we see that the total number of steps in around 10,000
 ```{r}
-hist(steps_per_day$Steps, breaks = 20, xlab = "Steps per Day", col = "blue")
+hist(steps_per_day$Steps, breaks = 20, xlab = "Steps per Day", col = "blue", main = NULL)
 ```
 
 ## What is the average daily activity pattern?
-To exmaine the data and compare the total of steps per interval through the day, we will first summarize the steps by interval for all days. 
+To exmaine the data and compare the average steps per interval through the day, we will first summarize the steps by interval for all days. 
 
 ```{r}
 steps_per_interval <- sapply(split(activity_sub$steps, activity_sub$interval), mean)
@@ -70,7 +71,7 @@ steps_max <- steps_per_interval$Interval[steps_per_interval$Steps == max(steps_p
 and determine that the time interval during the day that the most steps are taken is `r steps_max`
 
 
-## Imputing missing values
+## Inputing missing values
 However, we removed a large amount of NA values. We can also look at the data
 making asusmptions about the missing values. We can calculate the number of NA values using the following R code: 
 ```{r} 
@@ -99,12 +100,21 @@ steps_per_day_NA[,2] <- as.factor(rownames(steps_per_day_NA))
 rownames(steps_per_day_NA) <- NULL
 names(steps_per_day_NA) <- c("Steps", "Day")
 summary(steps_per_day_NA)
-hist(steps_per_day_NA$Steps, breaks = 20, xlab = "Steps per Day", col = "blue")
+```
+we can compare this to the data without NAs
+```{r}
+summary(steps_per_day)
 ```
 
+We can also visualize the data wiht NAs through a histogram plot
+```{r}
+hist(steps_per_day_NA$Steps, breaks = 20, xlab = "Steps per Day", col = "blue", main = NULL)
+```
+
+As we can see, replacing instead of removing the NAs doesn't change the mean, median, min, or max, but does have an impact on the data in between (1st and 3rd quantiles).
 
 ## Are there differences in activity patterns between weekdays and weekends?
-next we will look at differences in activity betwene weekdays and weekends. First we need ot transform our steps_per interval dataset to include a column that lets us know whether it was a weekday or weekend
+next we will look at differences in activity between weekdays and weekends. First we need ot transform our steps_per interval dataset to include a column that lets us know whether it was a weekday or weekend
 ```{r}
 activity_NAs$dow <- weekdays(activity_NAs$date)
 for(i in 1:nrow(activity_NAs)){
@@ -138,9 +148,7 @@ Combined_steps$Type <- as.factor(Combined_steps$Type)
 
 Now we can compare this data visually
 ```{r}
-coplot(Steps~Interval | Type, Combined_steps)
+xyplot(Steps~Interval | Type, data =Combined_steps, xlab = "Intervals", ylab = "Steps", type ="l", layout = c(1,2))
 
-par(mfrow = c(2,1))
-with (steps_per_interval_weekday, plot(Interval, Steps, xlab = "Intervals", ylab = "Steps", main = "Weekdays", type = "l"))
-with (steps_per_interval_weekend, plot(Interval, Steps, xlab = "Intervals", ylab = "Steps", main = "Weekends", type = "l"))
 ```
+Looking at the graph we see that people seem to be much more active on the weekend (i.e. take more steps) comapred to weekdays. 
