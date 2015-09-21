@@ -23,6 +23,7 @@ library(ggplot2)
 ```r
 library(lattice)
 opts_chunk$set(echo= TRUE)
+options(scipen = 2)
 ```
 
 ## Loading and preprocessing the data
@@ -75,8 +76,14 @@ summary(steps_per_day)
 ##                  (Other)   :47
 ```
 
-We can see from above that the total steps per day ranges from 41 to 21194 with a median of 10765 and a mean of   
-1.0766\times 10^{4}.
+```r
+mn <- round(mean(steps_per_day[,1]))
+med <- median(steps_per_day[,1])
+mini <- min(steps_per_day[,1])
+mx <- max(steps_per_day[,1])
+```
+
+We can see from above that the total steps per day ranges from 41 to 21194 with a median of 10765 and a mean of 10766
 
 We can visualize this data by generating a histogram and we see that the total number of steps in around 10,000
 
