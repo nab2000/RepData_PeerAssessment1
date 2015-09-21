@@ -75,8 +75,8 @@ summary(steps_per_day)
 ##                  (Other)   :47
 ```
 
-We can see from above that the total steps per day ranges from 126 to 11015 with a median of 12116 and a mean of   
-13294.
+We can see from above that the total steps per day ranges from 41 to 21194 with a median of 10765 and a mean of   
+1.0766\times 10^{4}.
 
 We can visualize this data by generating a histogram and we see that the total number of steps in around 10,000
 
